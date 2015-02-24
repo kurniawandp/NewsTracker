@@ -1,0 +1,41 @@
+import scrapy
+
+from newstracker.items import NewstrackerItem
+
+class GnSpider(scrapy.Spider):
+    name = "gn_spider"
+    allowed_domains = ["news.google.com"]
+    start_urls = ["https://news.google.com/news/section?pz=1&cf=all&topic=tc", "https://news.google.com/news/section?pz=2&cf=all&topic=tc"]
+
+    def parse(self, response):
+        sel = scrapy.Selector(response)
+        newss = sel.xpath('//tr')
+        items = []
+        
+        for news in newss:
+            #print news.extract()
+            
+            company_name = 'Samsung'
+            
+            
+            item = NewstrackerItem()
+            if news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-title-wrapper"]/h2/a/span/text()').extract():
+                if news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-title-wrapper"]/h2/a/span/text()').re(company_name):
+                    item['title'] = news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-title-wrapper"]/h2/a/span/text()').extract()
+                else:
+                    continue
+            if news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-title-wrapper"]/h2/a/@url').extract():
+                item['url'] = news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-title-wrapper"]/h2/a/@url').extract()
+            if news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-snippet-wrapper"]/text()').extract():
+                item['desc'] = news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-snippet-wrapper"]/text()').extract()
+                
+            if news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-source-wrapper"]/table/tbody/tr/td[@class="al-attribution-cell source-cell"]/span/text()').extract():
+                item['source'] = news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-source-wrapper"]/table/tbody/tr/td[@class="al-attribution-cell source-cell"]/span/text()').extract()
+            if news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-source-wrapper"]/table/tbody/tr/td[@class="al-attribution-cell timestamp-cell"]/span[@class="al-attribution-timestamp"]/text()').extract():
+                item['time'] = news.xpath('td[@class="esc-layout-article-cell"]/div[@class="esc-lead-article-source-wrapper"]/table/tbody/tr/td[@class="al-attribution-cell timestamp-cell"]/span[@class="al-attribution-timestamp"]/text()').extract()
+            if item:
+                items.append(item)
+        
+        if not items:
+            print "Nothing about " + company_name
+        return items
