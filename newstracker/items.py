@@ -16,8 +16,12 @@ class NewstrackerItem(scrapy.Item):
     url = scrapy.Field()
     time = scrapy.Field()
     source = scrapy.Field()
+    t_label = scrapy.Field()
+    d_label = scrapy.Field()
+
     pass
 
+#For DBCS
 class BusinessItem(scrapy.Item):
     title = scrapy.Field()
     id = scrapy.Field()
